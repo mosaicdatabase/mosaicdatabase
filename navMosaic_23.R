@@ -1,0 +1,213 @@
+#' #                                                                                                        -----
+#'*   PROJECT NAME    [Fetch_ATP]
+#'*   AUTHOR          [Connor Bernard. connor.bernard@zoo.ox.ac.uk.]
+#'*   LAST UPDATE     [14 Feb 2022]
+#'*   PURPOSE         [Downloading and Coercing the data in r]
+#'*   DEPENDENCIES    [NA]
+#' #                                                                                                        -----
+#-------------------------------
+#---------------------
+rm(list = ls()) # Clear workspace
+if(!is.null(dev.list())) dev.off() # Clear plots
+cat("\014") # Clear console
+
+
+library(devtools)
+source_url("https://raw.githubusercontent.com/mosaicdatabase/mosaicdatabase/main/mosaic_fetch.R")
+mosaic <- mos_fetch("v1.0.0")
+rm(metaIndexer, mos_fetch,url,Indices)
+
+
+cpa <- cdb_fetch("compadre")
+cma <- cdb_fetch("comadre")
+
+
+# Simple trait search - trait All Records
+traitAllRecords <- function(trait){
+  return(slot(slot(mosaic, trait),"value"))
+}
+
+
+# Species Trait Summary
+# NOTE THE SENSITIVITY OF THIS MEASURE TO CHANGES IN THE METADATA -- the 1:2 element that is removed
+speciesSummary  <- function(speciesNameLatin){
+  speciesIndex <- which(mosaic@species==speciesNameLatin)
+  metadataNames <- slotNames(mosaic)[-c(1:2)]
+  meta <- data.frame(matrix(NA, nrow=1, ncol=length(metadataNames)))
+  colnames(meta) <- metadataNames
+  for(i in 1:length(metadataNames)){
+    meta[,i] <- slot(slot(mosaic, metadataNames[[i]]), "value")[[speciesIndex]]
+  }
+  return(meta)
+}
+
+speciesSummary("Aepyceros melampus")
+
+
+# Is a species included in MOSAIC - T/F
+
+spp_check <- function(binomialName){ # is any given species in the database
+  return(length(which(mosaic@species==binomialName))>0)
+}
+
+spp_check("Fritillaria biflora")
+spp_check("Ursus meritimus")
+
+
+
+# Summary of multiple species
+
+multiSummary <- function(sppList){
+  summary <- lapply(sppList, speciesSummary)
+  framesummary <- data.frame(matrix(NA, nrow=length(summary), ncol=length(summary[[1]])))
+  colnames(framesummary) <- colnames(summary[[1]])
+  for(i in 1:length(summary)){
+    framesummary[i,] <- summary[[i]]
+  }
+  return(framesummary)
+}
+
+sppListTemp <- mosaic@species[1:10]
+multiSpecOut <- multiSummary(sppListTemp)
+multiSpecOut
+
+
+
+
+
+
+# Linking MOSAIC to COMADRE, COMPADRE, + PADRINO records
+equivalency_A <- function(x, y){
+  any(x==y)
+}
+
+IndexToRecord <- function(indexValue){#Index-to-Index 
+  return(which(unlist(lapply(mosaic@index, equivalency_A, indexValue))))
+}
+
+IndexToRecord(242472)
+
+RecordToIndex <- function(mosaicIndex){#Index-to-Index 
+  return(mosaic@index[[mosaicIndex]])
+}
+
+RecordToIndex(885)
+
+
+
+# CONNECT TO COMADRE/COMPADRE
+RecordToIndex(4)
+
+# From MOSAIC ID to a fetching of matrix population models
+
+
+
+# We will need to modify the language around the compadre elements
+# We will need to look @ a command to consider comadre v compadre
+
+allMat <- function(RecordToIndex){
+  allmatrices <- list()
+  for(i in 1:length(match(RecordToIndex, cma$MatrixID))){
+    allmatrices[[i]] <- cma$mat[[match(RecordToIndex, cma$MatrixID)[[i]]]]
+    }
+  return(allmatrices)
+}
+
+allMat(RecordToIndex(4))
+
+
+# Mat As only
+MatA <- function(RecordToIndex){
+  allmatrices <- list()
+  for(i in 1:length(match(RecordToIndex, cma$MatrixID))){
+    allmatrices[[i]] <- cma$mat[[match(RecordToIndex, cma$MatrixID)[[i]]]]@matA
+  }
+  return(allmatrices)
+}
+
+MatA(RecordToIndex(4))
+
+
+# The indexing for the model prompts - to be updated with more descriptive metadata
+indexToModel <- function(indexList){
+  elements <- list()
+  for(i in 1:length(indexList)){
+    elements[[i]] <- paste("model", i)
+  }
+  elements[[length(elements)+1]] <- "all models"
+  return(unlist(elements))
+}
+
+indexToModel(RecordToIndex(2))
+
+#? 
+listPull <- function(n, list){
+  return(list[[n]])
+}
+
+
+# Package this function into its own function
+# Need to fix the all models feature
+
+# listPull(menu(indexToModel(RecordToIndex(4))), MatA(RecordToIndex(4)))
+# 1
+
+link_comadre <- function(mosaicIndex){
+  print(paste("Matrix Population Models available for:", mosaic@species[mosaicIndex]))
+  print("More than one model in database - please make selection")
+  return(listPull(menu(indexToModel(RecordToIndex(mosaicIndex))),
+                  c(MatA(RecordToIndex(mosaicIndex)))))
+}
+
+link_comadre(4)
+3
+
+
+
+
+
+
+
+##########
+
+
+
+#-----------------
+
+
+modelIndexing <- function(indexSeries){
+  listofmodels <- list()
+  for(i in 1:length(indexSeries)){
+    listofmodels[[i]] <- paste(cpa$mat[[indexSeries[[i]]]]@matA)
+    }
+    return(listofmodels)
+}
+
+
+paste(cpa$mat[[match(RecordToIndex(4), cma$MatrixID)]]@matA)
+
+
+cma$mat[[RecordToIndex(4)[[1]]]]
+modelIndexing(RecordToIndex(4))
+RecordToIndex(4)[[1]]
+cpa$mat[[2]]@matA
+
+
+cpa$MatrixID
+match(RecordToIndex(4), cma$MatrixID)
+
+cma$mat[[match(RecordToIndex(4), cma$MatrixID)[[1]]]]
+
+
+# Set this up in a for loop where the indexing gets broken down with subpaste and subsequent re-matching
+
+cue <- list()
+for(k in 1:5){
+  cue[[k]] <- try(paste("cma$mat[[match(RecordToIndex(4), cma$MatrixID)[[", k, "]]]]", sep=""))
+}
+
+
+
+unlist(cue)
+RecordToIndex(4)
+
