@@ -21,7 +21,7 @@ package_vec <- c( # vector of package/library names - note: CRAN-dependent (no G
 )
 
 
-url <- "https://github.com/mosaicdatabase/mosaicdatabase/blob/main/crossRefIDs.rds?raw=true"
+url <- "https://github.com/mosaicdatabase/mosaicdatabase/blob/main/new_IDs.rds?raw=true"
 Indices <- readRDS(url(url, method="libcurl"))
 Indices
 
