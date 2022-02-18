@@ -73,7 +73,7 @@ Within each trait object, there are eight fields in mosaic. The first of field i
 
 mosaic@metaTaxa maps the complete taxanomic classification structure of a species - from Kingdom to species for taxonomic clustering.
 
-The other six attributes - "author", "year", "journal, "doi", "database", and "mosaic" - are metadata corresponding with each value record. For instance: 
+The other six attributes - "author", "year", "journal", "doi", "database", and "mosaic" - are metadata corresponding with each value record. For instance: 
 
 ```{r eval=FALSE}
 mosaic@species[[2]] # For this species, let us look at volancy (flight capacity) value
