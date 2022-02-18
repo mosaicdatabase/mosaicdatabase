@@ -1,0 +1,233 @@
+---
+title: "Navigating MOSAIC"
+author: "http://mosaicdatabase.web.ox.ac.uk"
+date: "Updated 11 February 2022"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Vignette #1 - Navigating MOSAIC
+
+Welcome to the **MOSAIC database**, a database of functional traits for comparative demography. The database, user, guide, and additional information can be found and <http://mosaicdatabase.web.ox.ac.uk>.
+
+MOSAIC is a database that aggregates existing databases and adds new records for functional traits that currently do not have a database established. In this vignette, we will show you how to download the dataset, search records, and relate MOSAIC records with COMADRE, COMPADRE, and PADRINO databases.
+
+
+##### <span style="color:cadetblue2">Optional clearance of working space</span>.
+```{r eval=FALSE}
+rm(list = ls()) # Clear your environment
+if(!is.null(dev.list())) dev.off() # Clear plots/graphics
+cat("\014") # Clear console
+
+```
+
+## Downloading MOSAIC
+
+MOSAIC can be downloaded as an S4 object by running the below code in R. S4 data objects in R are an object oriented system in the R language that tightly regulate linked data objects and that works well for organising complex, hierarchical data. Similar to the more commonly used S3 objects (which use the "$" operator), S4 are comprised of objects that can be searched with the "@" operator, discussed in more detail below.
+
+```{r echo=T, cache=FALSE, results=FALSE, warning=FALSE, comment=FALSE, warning=FALSE, message=FALSE}
+library(devtools)
+library(Rcompadre)
+source_url("https://raw.githubusercontent.com/mosaicdatabase/mosaicdatabase/main/mosaic_fetch.R") # Link GitHub
+mosaic <- mos_fetch("v1.0.0") # Loads version 1.0.0 of the mosaic database
+rm(metaIndexer, mos_fetch, url, Indices) # Clean the working environment - removes fetch-related functions
+```
+
+
+## Basics of manually navigating MOSAIC
+
+
+
+Unlike S3 objects, whose attributes/fields are searched with the "$" operator, S4 objects like mosaic are is searched with the "@" operator. These attribute names are analogous to the columns of a dataframe in a relational database structure.
+
+Once downloaded, you should be able to type statements mosaicdatabase@[insertfield] (where [insertfield] is a particular trait). If you are working in Rstudio, after the "@" a drop-down of the slots (traits) should autopopulate.
+
+```{r eval=FALSE}
+# Three examples of queerying traits (easiest for navigation)
+mosaic@biomass
+mosaic@height
+mosaic@volancy
+```
+
+You can also load the data using slots. As a matter of best-practice, slot inquiry is the suggested practice -- it has the disadvantage of not offering an autopopulation of the attributes contained in the database (traits must be spelled out manually).
+
+```{r eval=FALSE}
+# You can also search these by slot (recommended)
+slot(mosaic, "biomass")
+slot(mosaic, "height")
+slot(mosaic, "volancy")
+```
+
+Within each trait object, there are eight fields. The first of these is called "values" and contains the data.The other seven - "value", "author", "year", "journal, "doi", "database", and "mosaic - are metadata corresponding with each value record. So, for instance: 
+
+```{r eval=FALSE}
+mosaic@species[[2]] # For this species, let us look at volancy (flight capacity) value
+mosaic@volancy@value[[2]] # or, equivalently:
+slot(slot(mosaic, "volancy"), "value")[[2]]
+```
+Corresponds with the following metadata
+
+```{r eval=FALSE}
+mosaic@volancy@author[[2]] # for "Acinonyx jubatus"
+slot(slot(mosaic, "volancy"), "author")[[2]] # Author of the source publication
+slot(slot(mosaic, "volancy"), "year")[[2]] # And year of the source publication
+slot(slot(mosaic, "volancy"), "journal")[[2]] # The journal of the source publication
+#etc.
+```
+
+
+: (1) values (which record the records); (2) metadata (which records the source/provinance of the data). Values are unitless values (either numeric or factorial) that are reported in units described in the **Mosaic User Guide** <http://mosaicdatabase.web.ox.ac.uk/user-guide>. The metadata is organised into additional attributes, reflecting the individual elements of the metadata for a given record, including the authors, journal, year of publication, databases from which data are sourced (if applicable)
+
+
+```{r eval=FALSE}
+# Three examples of queerying traits
+mosaic@biomass@values
+mosaic@biomass@authors
+mosaic@biomass@year
+mosaic@biomass@journal
+```
+
+
+
+```{r eval=FALSE}
+# Let us look at a particular record for height
+mosaic@height@values[[5]]
+mosaic@height@authors[[5]]
+
+# This also works with the slot format
+slot(mosaic, "height"), "journal")[[5]]
+slot(mosaic, "height"), "database")[[5]]
+```
+
+
+## Using MOSAIC functions to quickly access files
+
+A series of convenience functions are scripted to facilitate navigating and working with the mosaic database that can be accessed by running the follwing script.
+
+Below we highlight some of the basic queries for which the mosaic functions can assist.
+```{r include=FALSE}
+spp_check <- function(binomialName){ # is any given species in the database
+  return(length(which(mosaic@species==binomialName))>0)
+}
+
+traitAllRecords <- function(trait){
+  return(slot(slot(mosaic, trait),"value"))
+}
+
+speciesSummary  <- function(speciesNameLatin){
+  speciesIndex <- which(mosaic@species==speciesNameLatin)
+  metadataNames <- slotNames(mosaic)[-c(1:3)]
+  meta <- data.frame(matrix(NA, nrow=1, ncol=length(metadataNames)))
+  colnames(meta) <- metadataNames
+  for(i in 1:length(metadataNames)){
+    meta[,i] <- slot(slot(mosaic, metadataNames[[i]]), "value")[[speciesIndex]]
+  }
+  return(meta)
+}
+
+multiSummary <- function(sppList){
+  summary <- lapply(sppList, speciesSummary)
+  framesummary <- data.frame(matrix(NA, nrow=length(summary), ncol=length(summary[[1]])+1))
+  colnames(framesummary) <- c("sppnames", colnames(summary[[1]]))
+  for(i in 1:length(summary)){
+    framesummary[i,] <- c(sppList[[i]],summary[[i]])
+  }
+  return(framesummary)
+}
+
+
+TraitFrequency <- function(trait){
+  focalTrait <- slot(slot(mosaic, trait), "value")
+  focalTrait <- as.factor(focalTrait)
+  hold <- matrix(NA,
+                 nrow=length(levels(focalTrait)),
+                 ncol=2)
+  
+  rownames(hold) <- levels(focalTrait)
+  colnames(hold) <- c("counts", "freq")
+  
+  for(i in 1:length(levels(focalTrait))){
+    hold[i,1] <- sum(focalTrait==levels(focalTrait)[[i]])
+  }
+  
+  hold[which(rownames(hold)=="NDY"),2] <- NA
+  hold[-which(rownames(hold)=="NDY"),2] <- round(hold[-which(rownames(hold)=="NDY"),1]/sum(hold[-which(rownames(hold)=="NDY"),1]), 3)
+  return(hold)
+}
+
+metaRecords <- function(trait, index){
+  metas <- data.frame(matrix(NA, nrow=1, ncol=5))
+  colnames(metas) <- c("author", "year", "journal", "database", "mosaic")
+  metas[1,1] <- slot(slot(mosaic, trait), "author")[[index]]
+  metas[1,2] <- slot(slot(mosaic, trait), "year")[[index]]
+  metas[1,3] <- slot(slot(mosaic, trait), "journal")[[index]]
+  metas[1,4] <- slot(slot(mosaic, trait), "database")[[index]]
+  metas[1,5] <- slot(slot(mosaic, trait), "mosaic")[[index]]
+  return(metas)
+}
+
+multiMetaRecords <- function(trait, sequenceOfIds){
+  formerMeta <- metaRecords("volancy", sequenceOfIds[[1]])
+  for(i in 2:length(sequenceOfIds)){
+    formerMeta <- rbind(metaRecords("volancy", sequenceOfIds[[i]]), formerMeta)
+  }
+  return(formerMeta)
+}
+```
+
+### Is a species included in Mosaic?
+```{r}
+spp_check("Fritillaria biflora")
+spp_check("Ursus meritimus")
+```
+
+### Can I see all records for a given trait?
+```{r eval=FALSE}
+traitAllRecords("biomass") # Resulting values not shown for space
+```
+```{r echo=FALSE}
+head(traitAllRecords("biomass")) # Resulting values not shown for space
+```
+
+### Can I see an overview of all records for a given species?
+```{r}
+speciesSummary("Aepyceros melampus")
+```
+
+### Can I see all records for more than one species?
+```{r}
+multiSummary(c("Acinonyx jubatus", # you can also pass lists or dataframes to this command
+               "Acropora downingi",
+               "Aepyceros melampus",
+               "Alces alces",
+               "Alligator mississippiensis"))
+```
+
+### Can I get a breakdown of counts/frequency of trait values?
+```{r}
+TraitFrequency("volancy")
+TraitFrequency("growthdet")
+TraitFrequency("hermaph")
+```
+
+### Can I get all metadata for one or more traits?
+```{r}
+metaRecords("volancy", 14)
+multiMetaRecords("volancy", c(14:20))
+```
+
+
+## Integrating MOSAIC with Structured Population Models
+MOSAIC is motivated by the need for trait integration with existing population databases, the COMADRE-COMPADRE-PADRINO databases in particular. Please carefully read the user guide and information at <https://compadre-db.org/> and <https://padrinodb.github.io/Padrino/> before working with COMADRE and COMPADRE databases.
+
+MOSAIC is organised as a relational database that is linked with COMADRE and COMPADRE through species name and unique-identifiers of the matrices.
+
+
+```{r eval=FALSE}
+link_comadre(21)
+```
