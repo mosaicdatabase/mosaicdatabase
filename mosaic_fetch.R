@@ -1,12 +1,13 @@
 #' #                                                                                                        -----
 #'*   PROJECT NAME    [Fetch_ATP]
 #'*   AUTHOR          [Connor Bernard. connor.bernard@zoo.ox.ac.uk.]
-#'*   LAST UPDATE     [16 Feb 2022]
+#'*   LAST UPDATE     [20 Feb 2022]
 #'*   PURPOSE         [Downloading and Coercing the data in r]
 #'*   DEPENDENCIES    [NA]
 #' #                                                                                                        -----
 #-------------------------------
 #---------------------
+
 
 #  Libraries
 install.load.package <- function(x) { # Automate installs & load packages from CRAN where needed
@@ -17,39 +18,45 @@ install.load.package <- function(x) { # Automate installs & load packages from C
 }
 
 package_vec <- c( # vector of package/library names - note: CRAN-dependent (no GitHub, local, &c.)
-  "RCurl"
+  "Rcurl",
+  "Rcompadre"
 )
 
+rm.except <- function(except, pattern) {
+  except = except
+  pattern = pattern
+  formula = c(c(except), ls(pattern = pattern, envir = .GlobalEnv))
+  rm(list = setdiff(ls(envir = .GlobalEnv), formula), envir = .GlobalEnv)
+}
 
-url <- "https://github.com/mosaicdatabase/mosaicdatabase/blob/main/new_IDs.rds?raw=true"
-Indices <- readRDS(url(url, method="libcurl"))
+api_key <- "https://github.com/mosaicdatabase/mosaicdatabase/blob/main/new_IDs.rds?raw=true"
+Indices <- readRDS(url(api_key, method="libcurl"))
 Indices
 
 sapply(package_vec, install.load.package) # Load the vector of libraries based on the install function - T & Fs returned
 rm(package_vec,install.load.package) # Once loaded, kill the load function and name vector
 
-comp <- cdb_fetch("compadre")
-coma <- cdb_fetch("comadre")
-cpa <- comp
-cma <- coma
+compadre <- cdb_fetch("compadre")
+comadre <- cdb_fetch("comadre")
 
 
-metaIndexer <- function(i){
+Index <- function(i){
   return(1:8+(8*i)-8)
 }
 
+
 mos_fetch <- function(id_key){
   id_key <- id_key
-  url_link <- paste("https://raw.githubusercontent.com/mosaicdatabase/mosaicdatabase/main/MOSAIC_", id_key, ".csv", sep="")
-  mosaic <- read.csv(url(url_link))
+  api_key_link <- paste("https://raw.githubusercontent.com/mosaicdatabase/mosaicdatabase/main/MOSAIC_", id_key, ".csv", sep="")
+  mosaic <- read.csv(url(api_key_link))
   
   spp <- mosaic$specieslist
   
-  compadre <- gsub("_", " ", cpa@data$SpeciesAuthor)
-  compadre <- sub('^(\\w+\\s+\\w+).*', '\\1', compadre)
+  cp_names <- gsub("_", " ", compadre@data$SpeciesAuthor)
+  cp_names <- sub('^(\\w+\\s+\\w+).*', '\\1', cp_names)
   
-  comadre <- gsub("_", " ", cma@data$SpeciesAuthor)
-  comadre <- sub('^(\\w+\\s+\\w+).*', '\\1', comadre)
+  ca_names <- gsub("_", " ", comadre@data$SpeciesAuthor)
+  ca_names <- sub('^(\\w+\\s+\\w+).*', '\\1', ca_names)
   
   taxMeta <- list()
   
@@ -62,13 +69,13 @@ mos_fetch <- function(id_key){
   Species_a <- list()
   
   for(i in 1:length(spp)){
-    Kingdom_a[[i]] <- try(cma@data$Kingdom[match(spp[[i]], comadre)])
-    Phylum_a[[i]] <- try(cma@data$Phylum[match(spp[[i]], comadre)])
-    Class_a[[i]] <- try(cma@data$Class[match(spp[[i]], comadre)])
-    Order_a[[i]] <- try(cma@data$Order[match(spp[[i]], comadre)])
-    Family_a[[i]] <- try(cma@data$Family[match(spp[[i]], comadre)])
-    Genus_a[[i]] <- try(cma@data$Genus[match(spp[[i]], comadre)])
-    Species_a[[i]] <- try(cma@data$Species[match(spp[[i]], comadre)])
+    Kingdom_a[[i]] <- try(comadre@data$Kingdom[match(spp[[i]], ca_names)])
+    Phylum_a[[i]] <- try(comadre@data$Phylum[match(spp[[i]], ca_names)])
+    Class_a[[i]] <- try(comadre@data$Class[match(spp[[i]], ca_names)])
+    Order_a[[i]] <- try(comadre@data$Order[match(spp[[i]], ca_names)])
+    Family_a[[i]] <- try(comadre@data$Family[match(spp[[i]], ca_names)])
+    Genus_a[[i]] <- try(comadre@data$Genus[match(spp[[i]], ca_names)])
+    Species_a[[i]] <- try(comadre@data$Species[match(spp[[i]], ca_names)])
   }
   
   Kingdom_a <- unlist(Kingdom_a)
@@ -88,15 +95,15 @@ mos_fetch <- function(id_key){
   Species_p <- list()
   
   for(i in 1:length(spp)){
-    Kingdom_p[[i]] <- try(cpa@data$Kingdom[match(spp[[i]], compadre)])
-    Phylum_p[[i]] <- try(cpa@data$Phylum[match(spp[[i]], compadre)])
-    Class_p[[i]] <- try(cpa@data$Class[match(spp[[i]], compadre)])
-    Order_p[[i]] <- try(cpa@data$Order[match(spp[[i]], compadre)])
-    Family_p[[i]] <- try(cpa@data$Family[match(spp[[i]], compadre)])
-    Genus_p[[i]] <- try(cpa@data$Genus[match(spp[[i]], compadre)])
-    Species_p[[i]] <- try(cpa@data$Species[match(spp[[i]], compadre)])
+    Kingdom_p[[i]] <- try(compadre@data$Kingdom[match(spp[[i]], cp_names)])
+    Phylum_p[[i]] <- try(compadre@data$Phylum[match(spp[[i]], cp_names)])
+    Class_p[[i]] <- try(compadre@data$Class[match(spp[[i]], cp_names)])
+    Order_p[[i]] <- try(compadre@data$Order[match(spp[[i]], cp_names)])
+    Family_p[[i]] <- try(compadre@data$Family[match(spp[[i]], cp_names)])
+    Genus_p[[i]] <- try(compadre@data$Genus[match(spp[[i]], cp_names)])
+    Species_p[[i]] <- try(compadre@data$Species[match(spp[[i]], cp_names)])
   }
-  cpa@data$Kingdom[match(spp[[1003]], compadre)]
+  compadre@data$Kingdom[match(spp[[1003]], cp_names)]
   
   Kingdom_p <- unlist(Kingdom_p)
   Phylum_p <- unlist(Phylum_p)
@@ -146,14 +153,14 @@ mos_fetch <- function(id_key){
   
   for(i in 1:14){
     theMetMet[[i]] <- new("mosaic_meta",
-                          value = unlist(mosaic[,metaIndexer(i)[1]], use.names = FALSE),
-                          author = unlist(mosaic[,metaIndexer(i)[2]], use.names = FALSE),
-                          year = unlist(mosaic[,metaIndexer(i)[3]], use.names = FALSE),
-                          journal = unlist(mosaic[,metaIndexer(i)[4]], use.names = FALSE),
-                          doi = unlist(mosaic[,metaIndexer(i)[5]], use.names = FALSE),
-                          database = unlist(mosaic[,metaIndexer(i)[6]], use.names = FALSE),
-                          mosaic = unlist(mosaic[,metaIndexer(i)[7]], use.names = FALSE),
-                          notes = unlist(mosaic[,metaIndexer(i)[8]], use.names = FALSE)
+                          value = unlist(mosaic[,Index(i)[1]], use.names = FALSE),
+                          author = unlist(mosaic[,Index(i)[2]], use.names = FALSE),
+                          year = unlist(mosaic[,Index(i)[3]], use.names = FALSE),
+                          journal = unlist(mosaic[,Index(i)[4]], use.names = FALSE),
+                          doi = unlist(mosaic[,Index(i)[5]], use.names = FALSE),
+                          database = unlist(mosaic[,Index(i)[6]], use.names = FALSE),
+                          mosaic = unlist(mosaic[,Index(i)[7]], use.names = FALSE),
+                          notes = unlist(mosaic[,Index(i)[8]], use.names = FALSE)
     )
   }
   
@@ -213,5 +220,6 @@ mos_fetch <- function(id_key){
                      volancy = volancy,
                      aquadep = aquadep
   )
+  rm.except("mosaic", pattern = "com")
   return(mosiac_main)
 }
