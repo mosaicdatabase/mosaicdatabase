@@ -1,12 +1,11 @@
-#' #                                                                                                        -----
-#'*   PROJECT NAME    [Fetch_ATP]
-#'*   AUTHOR          [Connor Bernard. connor.bernard@zoo.ox.ac.uk.]
-#'*   LAST UPDATE     [20 Feb 2022]
-#'*   PURPOSE         [Downloading and Coercing the data in r]
-#'*   DEPENDENCIES    [NA]
-#' #                                                                                                        -----
-#-------------------------------
-#---------------------
+#' Returns the mosaic database
+#'
+#' This downloads the MOSAIC database as an S4 object
+#' @param version Version of the MOSAIC database
+#' @return mosaic database
+#' @export
+#' @examples
+#' mos_fetch("v1.0.0")
 
 
 #  Libraries
@@ -18,9 +17,8 @@ install.load.package <- function(x) { # Automate installs & load packages from C
 }
 
 package_vec <- c( # vector of package/library names - note: CRAN-dependent (no GitHub, local, &c.)
-  "Rcurl",
-  "Rcompadre",
-  "Devtools"
+  "RCurl",
+  "Rcompadre"
 )
 
 rm.except <- function(except, pattern) {
@@ -50,17 +48,17 @@ mos_fetch <- function(id_key){
   id_key <- id_key
   api_key_link <- paste("https://raw.githubusercontent.com/mosaicdatabase/mosaicdatabase/main/MOSAIC_", id_key, ".csv", sep="")
   mosaic <- read.csv(url(api_key_link))
-  
+
   spp <- mosaic$specieslist
-  
+
   cp_names <- gsub("_", " ", compadre@data$SpeciesAuthor)
   cp_names <- sub('^(\\w+\\s+\\w+).*', '\\1', cp_names)
-  
+
   ca_names <- gsub("_", " ", comadre@data$SpeciesAuthor)
   ca_names <- sub('^(\\w+\\s+\\w+).*', '\\1', ca_names)
-  
+
   taxMeta <- list()
-  
+
   Kingdom_a <- list()
   Phylum_a <- list()
   Class_a <- list()
@@ -68,7 +66,7 @@ mos_fetch <- function(id_key){
   Family_a <- list()
   Genus_a <- list()
   Species_a <- list()
-  
+
   for(i in 1:length(spp)){
     Kingdom_a[[i]] <- try(comadre@data$Kingdom[match(spp[[i]], ca_names)])
     Phylum_a[[i]] <- try(comadre@data$Phylum[match(spp[[i]], ca_names)])
@@ -78,7 +76,7 @@ mos_fetch <- function(id_key){
     Genus_a[[i]] <- try(comadre@data$Genus[match(spp[[i]], ca_names)])
     Species_a[[i]] <- try(comadre@data$Species[match(spp[[i]], ca_names)])
   }
-  
+
   Kingdom_a <- unlist(Kingdom_a)
   Phylum_a <- unlist(Phylum_a)
   Class_a <- unlist(Class_a)
@@ -86,7 +84,7 @@ mos_fetch <- function(id_key){
   Family_a <- unlist(Family_a)
   Genus_a <- unlist(Genus_a)
   Species_a <- unlist(Species_a)
-  
+
   Kingdom_p <- list()
   Phylum_p <- list()
   Class_p <- list()
@@ -94,7 +92,7 @@ mos_fetch <- function(id_key){
   Family_p <- list()
   Genus_p <- list()
   Species_p <- list()
-  
+
   for(i in 1:length(spp)){
     Kingdom_p[[i]] <- try(compadre@data$Kingdom[match(spp[[i]], cp_names)])
     Phylum_p[[i]] <- try(compadre@data$Phylum[match(spp[[i]], cp_names)])
@@ -105,7 +103,7 @@ mos_fetch <- function(id_key){
     Species_p[[i]] <- try(compadre@data$Species[match(spp[[i]], cp_names)])
   }
   compadre@data$Kingdom[match(spp[[1003]], cp_names)]
-  
+
   Kingdom_p <- unlist(Kingdom_p)
   Phylum_p <- unlist(Phylum_p)
   Class_p <- unlist(Class_p)
@@ -113,12 +111,12 @@ mos_fetch <- function(id_key){
   Family_p <- unlist(Family_p)
   Genus_p <- unlist(Genus_p)
   Species_p <- unlist(Species_p)
-  
-  
+
+
   TaxaMeta <- data.frame(matrix(NA, ncol=7, nrow=length(mosaic$specieslist)))
   rownames(TaxaMeta) <- mosaic$specieslist
   colnames(TaxaMeta) <- c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species")
-  
+
   for(i in 1:length(mosaic$specieslist)){
     if(is.na(Kingdom_p[i]==FALSE)){
       TaxaMeta[i,1]<- Kingdom_a[i]
@@ -138,20 +136,20 @@ mos_fetch <- function(id_key){
       TaxaMeta[i,7]<- Species_p[i]
     }
   }
-  
+
   setClass("mosaic_meta",
            representation(value = "character",
                           author = "character",
                           year = "character",
                           journal = "character",
-                          doi = "character", 
+                          doi = "character",
                           database = "character",
                           mosaic = "character",
                           notes = "logical")
   )
-  
+
   theMetMet <- list()
-  
+
   for(i in 1:14){
     theMetMet[[i]] <- new("mosaic_meta",
                           value = unlist(mosaic[,Index(i)[1]], use.names = FALSE),
@@ -164,7 +162,7 @@ mos_fetch <- function(id_key){
                           notes = unlist(mosaic[,Index(i)[8]], use.names = FALSE)
     )
   }
-  
+
   biomass <- theMetMet[[1]]
   height <- theMetMet[[2]]
   growthdet <- theMetMet[[3]]
@@ -179,9 +177,9 @@ mos_fetch <- function(id_key){
   dispclass <- theMetMet[[12]]
   volancy <- theMetMet[[13]]
   aquadep <- theMetMet[[14]]
-  
+
   class(biomass)
-  
+
   setClass("mosaic_base",
            representation(species = "character",
                           taxaMetadat = "data.frame",
@@ -190,7 +188,7 @@ mos_fetch <- function(id_key){
                           height = "mosaic_meta",
                           growthdet = "mosaic_meta",
                           regen = "mosaic_meta",
-                          dimorph = "mosaic_meta", 
+                          dimorph = "mosaic_meta",
                           matsyst = "mosaic_meta",
                           hermaph = "mosaic_meta",
                           seqherm = "mosaic_meta",
@@ -201,7 +199,7 @@ mos_fetch <- function(id_key){
                           volancy = "mosaic_meta",
                           aquadep = "mosaic_meta")
   )
-  
+
   mosiac_main <- new("mosaic_base",
                      species = unlist(mosaic[,113], use.names = FALSE),
                      taxaMetadat = TaxaMeta,
@@ -210,7 +208,7 @@ mos_fetch <- function(id_key){
                      height = height,
                      growthdet = growthdet,
                      regen = regen,
-                     dimorph = dimorph, 
+                     dimorph = dimorph,
                      matsyst = matsyst,
                      hermaph = hermaph,
                      seqherm = seqherm,
