@@ -210,7 +210,7 @@ mos_fetch <- function(id_key){
                           aquadep = "mosaic_meta",
                           cmaClimate = "data.frame",
                           cmpClimate = "data.frame",
-                          phyloTree = "phylo")
+                          phyloTree = "list")
   )
 
   mosiac_main <- new("mosaic_base",
@@ -234,7 +234,8 @@ mos_fetch <- function(id_key){
                      aquadep = aquadep,
                      cmaClimate = ca.clim,
                      cmpClimate = cp.clim,
-                     phyloTree = mos_tree
+                     phyloTree = list(mos_tree$edge, mos_tree$edge.length, mos_tree$Nnode,
+                                      mos_tree$node.label, mos_tree$tip.label)
   )
   rm.except("mosaic", pattern = "com")
   return(mosiac_main)
