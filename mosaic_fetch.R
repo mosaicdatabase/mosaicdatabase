@@ -19,7 +19,7 @@ install.load.package <- function(x) { # Automate installs & load packages from C
 package_vec <- c( # vector of package/library names - note: CRAN-dependent (no GitHub, local, &c.)
   "RCurl",
   "Rcompadre",
-  "ape"
+  "treeio"
 )
 
 rm.except <- function(except, pattern) {
@@ -45,7 +45,7 @@ Index <- function(i){
 }
 
 
-new_fetch <- function(id_key){
+mos_fetch <- function(id_key){
   id_key <- id_key
   api_key_link <- paste("https://raw.githubusercontent.com/mosaicdatabase/mosaicdatabase/main/MOSAIC_", id_key, ".csv", sep="")
   mosaic <- read.csv(url(api_key_link))
