@@ -18,8 +18,7 @@ install.load.package <- function(x) { # Automate installs & load packages from C
 
 package_vec <- c( # vector of package/library names - note: CRAN-dependent (no GitHub, local, &c.)
   "RCurl",
-  "Rcompadre",
-  "ape"
+  "Rcompadre"
 )
 
 rm.except <- function(except, pattern) {
@@ -45,68 +44,7 @@ Index <- function(i){
 }
 
 
-ca_climate <- "https://raw.githubusercontent.com/mosaicdatabase/mosaicdatabase/main/mos_cma_climate.csv"
-  cp_climate <- "https://raw.githubusercontent.com/mosaicdatabase/mosaicdatabase/main/mos_cpa_climate.csv"
-  ca.clim <- read.csv(url(ca_climate, method="libcurl"))
-  cp.clim <- read.csv(url(cp_climate, method="libcurl"))
-
-  tree_url <- "https://raw.githubusercontent.com/mosaicdatabase/mosaicdatabase/main/mos_tree.tre"
-  mos_tree <- read.tree(url(tree_url))
-
-  class(biomass)
-
-  setClass("mosaic_base",
-           representation(species = "character",
-                          taxaMetadat = "data.frame",
-                          index = "list",
-                          mosaicID = "numeric",
-                          biomass = "mosaic_meta",
-                          height = "mosaic_meta",
-                          growthdet = "mosaic_meta",
-                          regen = "mosaic_meta",
-                          dimorph = "mosaic_meta",
-                          matsyst = "mosaic_meta",
-                          hermaph = "mosaic_meta",
-                          seqherm = "mosaic_meta",
-                          dispcap = "mosaic_meta",
-                          disptype = "mosaic_meta",
-                          modedisp = "mosaic_meta",
-                          dispclass = "mosaic_meta",
-                          volancy = "mosaic_meta",
-                          aquadep = "mosaic_meta",
-                          cmaClimate = "data.frame",
-                          cmpClimate = "data.frame",
-                          phyloTree = "phylo")
-  )
-
-  mosiac_main <- new("mosaic_base",
-                     species = unlist(mosaic[,113], use.names = FALSE),
-                     taxaMetadat = TaxaMeta,
-                     index = Indices,
-                     mosaicID = c(2000:2461,5000:5959),
-                     biomass = biomass,
-                     height = height,
-                     growthdet = growthdet,
-                     regen = regen,
-                     dimorph = dimorph,
-                     matsyst = matsyst,
-                     hermaph = hermaph,
-                     seqherm = seqherm,
-                     dispcap = dispcap,
-                     disptype = disptype,
-                     modedisp = modedisp,
-                     dispclass = dispclass,
-                     volancy = volancy,
-                     aquadep = aquadep,
-                     cmaClimate = ca.clim,
-                     cmpClimate = cp.clim,
-                     phyloTree = mos_tree
-  )
-  rm.except("mosaic", pattern = "com")
-  return(mosiac_main)
-}
-
-mos_fetch <- function(id_key){
+new_fetch <- function(id_key){
   id_key <- id_key
   api_key_link <- paste("https://raw.githubusercontent.com/mosaicdatabase/mosaicdatabase/main/MOSAIC_", id_key, ".csv", sep="")
   mosaic <- read.csv(url(api_key_link))
@@ -240,8 +178,6 @@ mos_fetch <- function(id_key){
   volancy <- theMetMet[[13]]
   aquadep <- theMetMet[[14]]
 
-  class(biomass)
-  
   ca_climate <- "https://raw.githubusercontent.com/mosaicdatabase/mosaicdatabase/main/mos_cma_climate.csv"
   cp_climate <- "https://raw.githubusercontent.com/mosaicdatabase/mosaicdatabase/main/mos_cpa_climate.csv"
   ca.clim <- read.csv(url(ca_climate, method="libcurl"))
