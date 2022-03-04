@@ -186,9 +186,13 @@ mos_fetch <- function(id_key){
 
   tree_url <- "https://raw.githubusercontent.com/mosaicdatabase/mosaicdatabase/main/mos_tree.tre"
   mos_tree <- read.tree(url(tree_url))
-
-  class(biomass)
-
+  
+  close(api_key_link)
+  close(tree_url)
+  close("https://raw.githubusercontent.com/mosaicdatabase/mosaicdatabase/main/mos_tree.tre")
+  close(ca_climate)
+  close(cp_climate)
+  
   setClass("mosaic_base",
            representation(species = "character",
                           taxaMetadat = "data.frame",
@@ -239,9 +243,4 @@ mos_fetch <- function(id_key){
   )
   rm.except("mosaic", pattern = "com")
   return(mosiac_main)
-  close(api_key_link)
-  close(tree_url)
-  close("https://raw.githubusercontent.com/mosaicdatabase/mosaicdatabase/main/mos_tree.tre")
-  close(ca_climate)
-  close(cp_climate)
 }
