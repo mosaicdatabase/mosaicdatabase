@@ -239,4 +239,8 @@ mos_fetch <- function(id_key){
   )
   rm.except("mosaic", pattern = "com")
   return(mosiac_main)
+  close(api_key_link)
+  close(tree_url)
+  close(ca_climate)
+  close(cp_climate)
 }
