@@ -241,6 +241,7 @@ mos_fetch <- function(id_key){
   return(mosiac_main)
   close(api_key_link)
   close(tree_url)
+  close("https://raw.githubusercontent.com/mosaicdatabase/mosaicdatabase/main/mos_tree.tre")
   close(ca_climate)
   close(cp_climate)
 }
