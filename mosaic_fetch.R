@@ -187,7 +187,7 @@ mos_fetch <- function(id_key){
   tree_url <- "https://raw.githubusercontent.com/mosaicdatabase/mosaicdatabase/main/mos_tree.tre"
   mos_tree <- read.tree(url(tree_url))
   
-  close("https://raw.githubusercontent.com/mosaicdatabase/mosaicdatabase/main/mos_tree.tre")
+  close(url(tree_url))
   
   setClass("mosaic_base",
            representation(species = "character",
