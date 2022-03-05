@@ -19,12 +19,7 @@ install.load.package <- function(x) { # Automate installs & load packages from C
 package_vec <- c( # vector of package/library names - note: CRAN-dependent (no GitHub, local, &c.)
   "RCurl",
   "Rcompadre",
-  "ape",
-  "tidyverse",
-  "magrittr",
-  "tibble",
-  "dplyr",
-  "purrr"
+  "ape"
 )
 
 rm.except <- function(except, pattern) {
@@ -32,13 +27,6 @@ rm.except <- function(except, pattern) {
   pattern = pattern
   formula = c(c(except), ls(pattern = pattern, envir = .GlobalEnv))
   rm(list = setdiff(ls(envir = .GlobalEnv), formula), envir = .GlobalEnv)
-}
-
-close_connection <- function(uri){
-    uri %>%
-    get_connections %>%
-    walk(close)
-    invisible(NULL)
 }
 
 api_key <- "https://github.com/mosaicdatabase/mosaicdatabase/blob/main/new_IDs.rds?raw=true"
