@@ -42,7 +42,6 @@ tree_url <- "https://raw.githubusercontent.com/mosaicdatabase/mosaicdatabase/mai
 
 mos_tree <- read.tree(url(tree_url))
 close(url(tree_url))
-close(tree_url)
 
 Index <- function(i){
   return(1:8+(8*i)-8)
