@@ -238,5 +238,8 @@ mos_fetch <- function(id_key){
                                       mos_tree$node.label, mos_tree$tip.label)
   )
   rm.except("mosaic", pattern = "com")
+  close(mos_tree))
+  close(url(tree_url))
+  close(tree_url)
   return(mosiac_main)
 }
