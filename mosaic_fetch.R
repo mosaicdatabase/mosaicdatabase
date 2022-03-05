@@ -40,8 +40,9 @@ compadre <- cdb_fetch("compadre")
 comadre <- cdb_fetch("comadre")
 tree_url <- "https://raw.githubusercontent.com/mosaicdatabase/mosaicdatabase/main/mos_tree.tre"
 
-mos_tree <- read.tree(url(tree_url))
-close(url(tree_url))
+URL_act_tree <- url(tree_url)
+mos_tree <- read.tree(URL_act_tree)
+close(URL_act_tree)
 
 Index <- function(i){
   return(1:8+(8*i)-8)
