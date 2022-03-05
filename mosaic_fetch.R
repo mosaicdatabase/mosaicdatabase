@@ -19,7 +19,12 @@ install.load.package <- function(x) { # Automate installs & load packages from C
 package_vec <- c( # vector of package/library names - note: CRAN-dependent (no GitHub, local, &c.)
   "RCurl",
   "Rcompadre",
-  "ape"
+  "ape",
+  "tidyverse",
+  "magrittr",
+  "tibble",
+  "dplyr",
+  "purrr"
 )
 
 rm.except <- function(except, pattern) {
@@ -27,6 +32,13 @@ rm.except <- function(except, pattern) {
   pattern = pattern
   formula = c(c(except), ls(pattern = pattern, envir = .GlobalEnv))
   rm(list = setdiff(ls(envir = .GlobalEnv), formula), envir = .GlobalEnv)
+}
+
+close_connection <- function(uri){
+    uri %>%
+    get_connections %>%
+    walk(close)
+    invisible(NULL)
 }
 
 api_key <- "https://github.com/mosaicdatabase/mosaicdatabase/blob/main/new_IDs.rds?raw=true"
@@ -38,7 +50,12 @@ rm(package_vec,install.load.package) # Once loaded, kill the load function and n
 
 compadre <- cdb_fetch("compadre")
 comadre <- cdb_fetch("comadre")
+tree_url <- "https://raw.githubusercontent.com/mosaicdatabase/mosaicdatabase/main/mos_tree.tre"
 
+mos_tree <- read.tree(url(tree_url))
+try(close_connection(url(tree_url)))
+try(close_connection(tree_url))
+try(close(url(tree_url)))
 
 Index <- function(i){
   return(1:8+(8*i)-8)
@@ -183,11 +200,6 @@ mos_fetch <- function(id_key){
   cp_climate <- "https://raw.githubusercontent.com/mosaicdatabase/mosaicdatabase/main/mos_cpa_climate.csv"
   ca.clim <- read.csv(url(ca_climate, method="libcurl"))
   cp.clim <- read.csv(url(cp_climate, method="libcurl"))
-
-  tree_url <- "https://raw.githubusercontent.com/mosaicdatabase/mosaicdatabase/main/mos_tree.tre"
-  mos_tree <- read.tree(url(tree_url))
-  
-  close(url(tree_url))
   
   setClass("mosaic_base",
            representation(species = "character",
@@ -238,8 +250,5 @@ mos_fetch <- function(id_key){
                                       mos_tree$node.label, mos_tree$tip.label)
   )
   rm.except("mosaic", pattern = "com")
-  close(mos_tree))
-  close(url(tree_url))
-  close(tree_url)
   return(mosiac_main)
 }
